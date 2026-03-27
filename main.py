@@ -23,12 +23,12 @@ def verifica_vitoria(tabuleiro, jogador):
 
     return False
 
-def teste_terminal(estado):
+def teste_terminal(estado,jogador,adversario):
     # agente ganhou
-    if verifica_vitoria(estado, 'X'):
+    if verifica_vitoria(estado, adversario):
         return 1
     # humano ganhou
-    if verifica_vitoria(estado, 'O'):
+    if verifica_vitoria(estado, jogador):
         return -1
     # jogo não terminou
     for linha in estado:
@@ -50,44 +50,46 @@ def sucessores(estado, jogador_atual):
                 lista_sucessores.append(novo_estado)
     return lista_sucessores
 
-def valor_max(estado):
+def valor_max(estado, jogador, agente):
     # verifica se o jogo acabou
-    utilidade = teste_terminal(estado)
+    utilidade = teste_terminal(estado, jogador, agente)
     if utilidade is not None:
         return utilidade
+    
     # pior valor possível
     v = -float('inf')
+    
     # testa todas as jogadas possíveis
-    for s in sucessores(estado, 'X'):
+    for s in sucessores(estado, agente):
         # melhor resultado
-        v = max(v, valor_min(s))
-
+        v = max(v, valor_min(s, jogador, agente))
+        
     return v
 
-def valor_min(estado):
+def valor_min(estado, jogador, agente):
     # verifica se o jogo acabou
-    utilidade = teste_terminal(estado)
+    utilidade = teste_terminal(estado, jogador, agente)
     if utilidade is not None:
         return utilidade
     v = float('inf')
+    
 
-    for s in sucessores(estado, 'O'):
+    for s in sucessores(estado, jogador):
         # jogada que mais atrapalha o humano
-        v = min(v, valor_max(s))
-
+        v = min(v, valor_max(s, jogador, agente))
     return v
 
 # escolhe a jogada
-def decisao_minimax(estado):
+def decisao_minimax(estado, jogador, agente):
     melhor_valor = -float('inf')
     melhor_jogada = None
-
-    for s in sucessores(estado, 'X'):
-        v = valor_min(s)
+    
+    for s in sucessores(estado, agente):
+        v = valor_min(s, jogador, agente)
         if v > melhor_valor:
             melhor_valor = v
             melhor_jogada = s
-
+            
     return melhor_jogada
 
 
@@ -97,61 +99,59 @@ def start_jogo():
         [" ", " ", " "],
         [" ", " ", " "]
     ]
-
-    print("=======================================")
-    print("Bem-vindo ao jogo da velha!")
-    print("O Agente (IA) jogará como 'X'.")
-    print("Você jogará como 'O'.")
-    print("=======================================")
-
+    
     escolha = ""
     while escolha != "1" and escolha != "2":
-        escolha = input("Quem começa? Digite 1 para o Agente(X) ou 2 para Você(O): ")
+        escolha = input("Digite 1 para jogar como X ou 2 para O: ")
 
-    jogador_atual = "X" if escolha == "1" else "O"
+    if escolha == "1":
+        jogador = "X"
+        adversario = "O"
+    else:
+        jogador = "O"
+        adversario = "X"
+    
 
+    jogador_atual = "X"
     mostra_tabuleiro(tabuleiro)
 
     # loop principal do jogo
     while True:
-        if jogador_atual == "O":
+        if jogador_atual == jogador:
             # vez da pessoa
-            print("Sua vez! (Você é o 'O')")
+            print(f"\nSua vez! (Você é o '{jogador}')")
             while True:
                 try:
                     linha = int(input("Escolha a linha (1 - 3): ")) - 1
                     coluna = int(input("Escolha a coluna (1 - 3): ")) - 1
-
                     if 0 <= linha <= 2 and 0 <= coluna <= 2 and tabuleiro[linha][coluna] == " ":
-                        tabuleiro[linha][coluna] = "O"
+                        tabuleiro[linha][coluna] = jogador
                         break
                     else:
-                        print("Posição inválida ou já ocupada. Tente novamente.")
+                        print("Posição inválida ou ocupada.")
                 except ValueError:
-                    print("Por favor, digite um número válido.")
-
+                    print("Digite números de 1 a 3.")
         else:
             # vez do agente
-            print("\nVez do Agente (X). Pensando na melhor jogada...")
-            tabuleiro = decisao_minimax(tabuleiro)
+            print(f"\nVez do Agente ({adversario}).")
+ 
+            tabuleiro = decisao_minimax(tabuleiro, jogador, adversario)
 
         mostra_tabuleiro(tabuleiro)
 
         # verificação de fim de jogo
-        utilidade = teste_terminal(tabuleiro)
-
-        if utilidade == 1:
-            print("O Agente (X) venceu!")
-            break
-        elif utilidade == -1:
-            print("Você venceu!")
-            break
-        elif utilidade == 0:
-            print("O jogo terminou empatado.")
+        utilidade = teste_terminal(tabuleiro, jogador, adversario)
+        
+        if utilidade is not None: 
+            if utilidade == 1:
+                print(f"O Agente ({adversario}) venceu!")
+            elif utilidade == -1:
+                print("Você venceu!")
+            else:
+                print("Empate!")
             break
 
         # próximo turno
-        jogador_atual = "X" if jogador_atual == "O" else "O"
-
+        jogador_atual = "O" if jogador_atual == "X" else "X"
 
 start_jogo()
