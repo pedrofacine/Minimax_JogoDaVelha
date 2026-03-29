@@ -23,9 +23,9 @@ def verifica_vitoria(tabuleiro, jogador):
 
     return False
 
-def teste_terminal(estado,jogador,adversario):
+def teste_terminal(estado,jogador,agente):
     # agente ganhou
-    if verifica_vitoria(estado, adversario):
+    if verifica_vitoria(estado, agente):
         return 1
     # humano ganhou
     if verifica_vitoria(estado, jogador):
@@ -106,10 +106,10 @@ def start_jogo():
 
     if escolha == "1":
         jogador = "X"
-        adversario = "O"
+        agente = "O"
     else:
         jogador = "O"
-        adversario = "X"
+        agente = "X"
     
 
     jogador_atual = "X"
@@ -133,18 +133,18 @@ def start_jogo():
                     print("Digite números de 1 a 3.")
         else:
             # vez do agente
-            print(f"\nVez do Agente ({adversario}).")
+            print(f"\nVez do Agente ({agente}).")
  
-            tabuleiro = decisao_minimax(tabuleiro, jogador, adversario)
+            tabuleiro = decisao_minimax(tabuleiro, jogador, agente)
 
         mostra_tabuleiro(tabuleiro)
 
         # verificação de fim de jogo
-        utilidade = teste_terminal(tabuleiro, jogador, adversario)
+        utilidade = teste_terminal(tabuleiro, jogador, agente)
         
         if utilidade is not None: 
             if utilidade == 1:
-                print(f"O Agente ({adversario}) venceu!")
+                print(f"O Agente ({agente}) venceu!")
             elif utilidade == -1:
                 print("Você venceu!")
             else:
